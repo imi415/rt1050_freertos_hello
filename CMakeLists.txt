@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(imxrt1050_template)
+project(imxrt1050_freertos_hello)
 
 enable_language(CXX)
 enable_language(ASM)
@@ -9,7 +9,7 @@ enable_language(ASM)
 set(TARGET_CFLAGS_HARDWARE "-mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb")
 
 # Extra CFlags
-set(TARGET_CFLAGS_EXTRA   "-Og")
+set(TARGET_CFLAGS_EXTRA   "")
 set(TARGET_CXXFLAGS_EXTRA "")
 set(TARGET_LDFLAGS_EXTRA  "-Wl,--print-memory-usage")
 
@@ -96,6 +96,7 @@ set(TARGET_C_SOURCES
     "board/peripherals.c"
     "board/pin_mux.c"
     "source/main.c"
+    "source/tasks/hello_task.c"
 )
 
 # Copy them from Makefile
@@ -113,20 +114,36 @@ set(TARGET_DEFINES
 # Copy them from Makefile
 set(TARGET_INCLUDES
     "board"
-    "source"
+    "include"
     "devices/MIMXRT1052"
     "devices/MIMXRT1052/drivers"
     "CMSIS/Core/Include"
 )
 
 set(TARGET_LIBS
+    "freertos-kernel"
 )
+
+# Conditional flags
+set(CMAKE_C_FLAGS_DEBUG     "-DDEBUG -Og -g")
+set(CMAKE_CXX_FLAGS_DEBUG   "-DDEBUG -Og -g")
+set(CMAKE_ASM_FLAGS_DEBUG   "-DDEBUG -Og -g")
+
+set(CMAKE_C_FLAGS_RELEASE   "-DNDEBUG -O2")
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2")
+set(CMAKE_ASM_FLAGS_RELEASE "-DNDEBUG -O2")
 
 # Final compiler flags
 set(CMAKE_C_FLAGS          "${TARGET_CFLAGS_HARDWARE} ${TARGET_CFLAGS_EXTRA} ${TARGET_CFLGAGS_DEBUG} -Wall -fdata-sections -ffunction-sections -ffreestanding -fno-builtin")
 set(CMAKE_CXX_FLAGS        "${CMAKE_C_FLAGS} ${TARGET_CXXFLAGS_EXTRA}")
 set(CMAKE_ASM_FLAGS        "${CMAKE_C_FLAGS} -x assembler-with-cpp")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_C_FLAGS} -specs=nano.specs -specs=nosys.specs -Wl,--gc-sections -lc -lm -lnosys ${TARGET_LDFLAGS_EXTRA}")
+
+set(FREERTOS_ARCH           "ARM_CM7/r0p1")
+set(FREERTOS_TOOLCHAIN      "GCC")
+set(FREERTOS_MEMMANG_METHOD "4")
+set(FREERTOS_CONFIG_FILE    "${CMAKE_CURRENT_SOURCE_DIR}/include/FreeRTOSConfig.h")
+add_subdirectory(components/FreeRTOS)
 
 # Main targets are added here
 
